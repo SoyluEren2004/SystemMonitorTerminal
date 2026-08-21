@@ -1,12 +1,28 @@
 #include "FanControl.h"
-
-
+#include <iostream>
+#include <unistd.h>
+#include <sys/poll.h> // poll için gerekli
 
 void FanControl::Fancontrol(){
-    int choice;
+    int choice = -1; 
     std::cout<<"Fan Control:\n-> 1-Close Fans\n-> 2-Set mid level to your fan\n-> 3-Set max level to your fan"<<std::endl;
-    std::cout<<"Type number: ";
-    std::cin>>choice;
+    std::cout<<"Type number (5s timeout): " << std::flush;
+
+    // Linux poll yapısı (stdin, fd = 0)
+    struct pollfd pfd;
+    pfd.fd = 0; // STDIN_FILENO
+    pfd.events = POLLIN;
+
+    // 5s
+    int ret = poll(&pfd, 1, 5000); 
+
+    if (ret > 0) { 
+        std::cin >> choice;
+    } else {
+        std::cout << "\n[Time out: No input received, skipping...]\n";
+        return; 
+    }
+
     std::cout<<std::endl;
     switch (choice)
     {
@@ -30,5 +46,4 @@ void FanControl::Fancontrol(){
     default:
         break;
     }
-
 }
